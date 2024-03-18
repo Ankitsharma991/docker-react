@@ -18,6 +18,7 @@ function App() {
         >
           Docker Compose
         </a>
+        <p>I was changed to features</p>
       </header>
     </div>
   );
