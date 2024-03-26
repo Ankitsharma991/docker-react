@@ -1,23 +1,24 @@
 sudo: required
 services:
-  - docker 
+  - docker
 
-before_install:
-  - docker build -t 65avdc8654pr/docker-react -f Dockerfile.dev .
 
-script:
-  - docker run 65avdc8654pr/docker-react npm run test -- --coverage
+before_install: 
+  - docker build -t 65avdc8654pr/react-test -f ./client/Dockerfile.dev ./client
 
-# AWS Deployment Details
-# deploy:
-#   provider: elasticbeanstalk
-#   region: "us-west-2"
-#   app: "docker"
-#   env: "Docker-env"
-#   bucket_name: "elasticbeanstalk-us-west-2-306476627547"
-#   bucket_path: "docker"
-#   on:
-#     branch: main
-#     access_key_id: $AWS_ACCESS_KEY
-#     secret_access_key:
-#       secure: "$AWS_SECRET_KEY"
+script: 
+  - docker run 65avdc8654pr/react-test npm test -- --coverage
+
+after_success: 
+  - docker build -t 65avdc8654pr/multi-client ./client
+  - docker build -t 65avdc8654pr/multi-nginx ./nginx
+  - docker build -t 65avdc8654pr/multi-server ./server
+  - docker build -t 65avdc8654pr/multi-worker ./worker
+  # log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push 65avdc8654pr/multi-client
+  - docker push 65avdc8654pr/multi-server
+  - docker push 65avdc8654pr/multi-nginx
+  - docker push 65avdc8654pr/multi-worker
+
+  # take those images and push them to docker hub
